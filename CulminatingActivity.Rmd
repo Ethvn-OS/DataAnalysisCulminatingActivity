@@ -1,0 +1,29 @@
+---
+title: "Culminating Activity"
+author: "Alagon, Arcena, Argawanon, Coyacot, Dalocanog"
+date: "2026-05-03"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Abstract
+Provide a concise summary of the study including purpose, methods, results, and conclusions (150-250 words)
+
+# Chapter 1: Introduction
+## Background of the Study
+Discuss the context and importance of the research problem
+
+# Statement of the Problem
+Clearly state the research questions.
+
+1. What is... ?
+
+2. How does... ?
+
+# Objectives of the Study
+## General Objective
+
+## Specific Objectives
