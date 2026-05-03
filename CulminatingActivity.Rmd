@@ -26,4 +26,10 @@ Clearly state the research questions.
 # Objectives of the Study
 ## General Objective
 
+- To investigate ...
+
 ## Specific Objectives
+
+- To determine ...
+
+- To analyze ...
