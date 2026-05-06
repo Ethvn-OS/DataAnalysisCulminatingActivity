@@ -7,6 +7,10 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(dplyr)
+library(caret)
+library(class)
 ```
 
 # Abstract
@@ -16,14 +20,14 @@ Provide a concise summary of the study including purpose, methods, results, and 
 ## Background of the Study
 Discuss the context and importance of the research problem
 
-# Statement of the Problem
+## Statement of the Problem
 Clearly state the research questions.
 
 1. What is... ?
 
 2. How does... ?
 
-# Objectives of the Study
+## Objectives of the Study
 ## General Objective
 
 - To investigate ...
@@ -33,3 +37,211 @@ Clearly state the research questions.
 - To determine ...
 
 - To analyze ...
+
+## Hypotheses (if applicable)
+
+- **H0:** There is no significant relationship between...
+
+- **H1:** There is a significant relationship between...
+
+## Significance of the study
+Explain who benefits and how.
+
+## Scope and Limitations
+Define the boundaries of the study.
+
+# Chapter 2: Review of Related Literature
+## Related Studies
+Summarize previous research
+
+## Related Literature
+Discuss theories and concepts.
+
+## Conceptual Framework
+(Insert diagram if needed)
+
+# Chapter 3: Methodology
+Research Design
+
+Describe the design (e.g., descriptive, experimental).
+
+Data Collection
+
+Get a data set from www.kaggle.com
+```{r}
+data <- read.csv('C:/Data Analysis/DataAnalysisCulminatingActivity/cs_students.csv')
+kable(head(data),
+      caption = "Descriptive Statistics of CS Students",
+      align = "c")
+
+data <- data[, !(names(data) %in% c("Student.ID", "Name"))]
+
+data <- na.omit(data)
+
+# Target variable
+# data$Future.Career = factor(data$Future.Career)
+
+# Weak = 1
+# Average = 2
+# Strong = 3
+data$Python <- as.numeric(factor(data$Python,
+                                 levels = c("Weak", "Average", "Strong")))
+data$SQL <- as.numeric(factor(data$SQL,
+                              levels = c("Weak", "Average", "Strong")))
+data$Java <- as.numeric(factor(data$Java,
+                              levels = c("Weak", "Average", "Strong")))
+
+# Gender
+data$Gender <- ifelse(data$Gender == "Male", 0, 1)
+
+# Grouping 
+library(dplyr)
+
+data$Career_Group <- case_when(
+  # Software Development
+  data$Future.Career %in% c(
+    "Software Engineer", "Web Developer", "Mobile App Developer",
+    "Game Developer", "Embedded Software Engineer",
+    "Distributed Systems Engineer", "Graphics Programmer"
+  ) ~ "Software Dev",
+
+  # Data & Analytics
+  data$Future.Career %in% c(
+    "Data Scientist", "Data Analyst", "Database Administrator",
+    "Bioinformatician", "Geospatial Analyst"
+  ) ~ "Data",
+
+  # AI / Machine Learning
+  data$Future.Career %in% c(
+    "Machine Learning Engineer", "AI Researcher",
+    "Machine Learning Researcher", "NLP Research Scientist",
+    "NLP Engineer", "Computer Vision Engineer",
+    "Robotics Engineer", "Quantum Computing Researcher"
+  ) ~ "AI/ML",
+
+  # Cybersecurity
+  data$Future.Career %in% c(
+    "Information Security Analyst", "Ethical Hacker",
+    "Security Analyst", "Digital Forensics Specialist",
+    "Data Privacy Specialist"
+  ) ~ "Cybersecurity",
+
+  # Cloud / Infrastructure
+  data$Future.Career %in% c(
+    "Cloud Solutions Architect", "DevOps Engineer",
+    "IoT Developer"
+  ) ~ "Cloud/DevOps",
+
+  # Design & User Experience
+  data$Future.Career %in% c(
+    "UX Designer", "VR Developer"
+  ) ~ "Design",
+
+  # Business / Misc Tech
+  data$Future.Career %in% c(
+    "SEO Specialist", "Healthcare IT Specialist",
+    "Blockchain Engineer"
+  ) ~ "Other",
+
+  TRUE ~ "Other"
+)
+
+data$Career_Group <- as.character(data$Career_Group)
+data$Career_Group[is.na(data$Career_Group)] <- "Other"
+data$Career_Group <- as.factor(data$Career_Group)
+
+target <- data$Career_Group
+features <- data[, !(names(data) %in% c("Future.Career", "Career_Group"))]
+
+features <- features[, sapply(features, function(x) length(unique(x)) > 1)]
+
+features_encoded <- model.matrix(~ . - 1, data = features)
+
+sum(is.na(features_encoded))
+
+# Change this to only calculate scaling parameters using the training data set
+# This is to prevent data leakage from happening
+# features_scaled <- scale(features_encoded)
+
+target <- as.factor(target)
+
+train_index <- createDataPartition(target,
+                                   p = 0.7, 
+                                   list = FALSE)
+
+# train_index <- sample(1:nrow(features_encoded), 0.7 * nrow(features_encoded))
+
+# train <- data[train_index, ]
+# test <- data[-train_index, ]
+
+features_encoded <- scale(features_encoded)
+
+x_train <- features_encoded[train_index, ]
+x_test  <- features_encoded[-train_index, ]
+
+y_train <- target[train_index]
+y_test  <- target[-train_index]
+
+# sc <- scale(x_train)
+
+# x_train <- sc
+# x_test <- scale(x_test,
+#                 center = attr(sc, "scaled:center"),
+#                 scale  = attr(sc, "scaled:scale"))
+
+# nzv <- apply(x_train, 2, sd) != 0
+# x_train <- x_train[, nzv]
+# x_test <- x_test[, nzv]
+
+k_new <- round(sqrt(nrow(x_train)))
+if (k_new %% 2 == 0) k_new <- k_new + 1
+
+pred <- knn(train = x_train,
+            test = x_test,
+            cl = y_train,
+            k = k_new)
+
+pred
+
+mean(pred == y_test)
+
+# Confusion Matrix
+cM = confusionMatrix(pred, y_test)
+addmargins(cM$table)
+```
+
+Variables Description
+
+Explain dependent and independent variables
+
+Data Analysis Techniques
+
+- Descriptive Statistics
+- Inferential Statistics
+- Machine Learning Models (if applicable)
+
+# Chapter 4: Results and Discussion
+Descriptive Statistics
+
+Visualization
+
+Model (Example: Linear Regression)
+
+Interpretation
+
+Discuss findings in paragraph form
+
+# Chapter 5: Conclusion and Recommendations
+Conclusion
+
+Summarize key findings
+
+**Recommendations**
+
+Provide practical suggestions
+
+## References
+Use APA format.
+
+## Appendices
+Appendix A: Code
